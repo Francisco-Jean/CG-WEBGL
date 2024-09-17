@@ -109,11 +109,60 @@ function configScene() {
          1000, 0, 1000, 1.0, 1.0,
 
         //Quad
-        10,  0, 10.0, 1.0, 1.0,
-        10, 10, 10.0, 1.0, 0.0,
-        10, 10,  0.0, 0.0, 0.0,
-        10,  0,    0, 0.0, 1.0,
-        10,  0,   10, 1.0, 1.0,
+        10,  0, 10, 1.0, 1.0,
+        10, 10, 10, 1.0, 0.0,
+        10, 10,  0, 0.0, 0.0,
+        10,  0,  0, 0.0, 1.0,
+        10,  0, 10, 1.0, 1.0,
+
+        20, 10, 10, 0.0, 0.0,
+        20,  0, 10, 0.0, 1.0,
+        20,  0,  0, 1.0, 1.0,
+        20, 10,  0, 1.0, 0.0,
+        20, 10, 10, 0.0, 0.0,
+
+        20, 10,  0, 0.0, 0.0,
+        20,  0,  0, 0.0, 1.0,
+        10,  0,  0, 1.0, 1.0,
+        10, 10,  0, 1.0, 0.0,
+        20, 10,  0, 0.0, 0.0,
+
+        20,  0, 10, 1.0, 1.0,
+        20, 10, 10, 1.0, 0.0,
+        10, 10, 10, 0.0, 0.0,
+        10,  0, 10, 0.0, 1.0,
+        20,  0, 10, 1.0, 1.0,
+
+        10,  0, 10, 1.0, 1.0,
+        10, 10, 10, 1.0, 0.0,
+        10, 10,  0, 0.0, 0.0,
+        10,  0,  0, 0.0, 1.0,
+        10,  0, 10, 1.0, 1.0,
+
+        // Teto esquerda
+        10,  0, 10, 1.0, 1.0,
+        10, 10, 10, 1.0, 0.0,
+        10, 10,  0, 0.0, 0.0,
+        10,  0,  0, 0.0, 1.0,
+        10,  0, 10, 1.0, 1.0,
+        // Teto direita
+        20, 10, 10, 0.0, 0.0,
+        20,  0, 10, 0.0, 1.0,
+        20,  0,  0, 1.0, 1.0,
+        20, 10,  0, 1.0, 0.0,
+        20, 10, 10, 0.0, 0.0,
+        // Teto frente
+        20,  0, 10, 1.0, 1.0,
+        20, 10, 10, 1.0, 0.0,
+        10, 10, 10, 0.0, 0.0,
+        10,  0, 10, 0.0, 1.0,
+        20,  0, 10, 1.0, 1.0,
+        // Teto trás
+        20, 10,  0, 0.0, 0.0,
+        20,  0,  0, 0.0, 1.0,
+        10,  0,  0, 1.0, 1.0,
+        10, 10,  0, 1.0, 0.0,
+        20, 10,  0, 0.0, 0.0,
 
         //Face 1
          45.0,  40.0, 40.0, 0.0, 0.0,
@@ -156,6 +205,7 @@ function configScene() {
          45.0,  45.0, 40.0, 0.0, 0.0,
          45.0,  45.0, 45.0, 0.0, 1.0,
          45.0,  40.0, 45.0, 1.0, 1.0,
+
     ]);
 
     //Cria buffer na GPU e copia coordenadas para ele
@@ -200,6 +250,36 @@ function configScene() {
         0, 1, 0,
         0, 1, 0,
         0, 1, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
 
         1, 0, 0,
         1, 0, 0,
@@ -552,19 +632,19 @@ function draw() {
     gl.drawArrays(gl.TRIANGLES, 5, 3);
     gl.drawArrays(gl.TRIANGLES, 7, 3);
 
-    gl.uniform1i(texPtr, 3);
+    gl.uniform1i(texPtr, 1);
     gl.drawArrays(gl.TRIANGLES, 10, 3);
     gl.drawArrays(gl.TRIANGLES, 12, 3);
 
-    gl.uniform1i(texPtr, 3);
+    gl.uniform1i(texPtr, 1);
     gl.drawArrays(gl.TRIANGLES, 15, 3);
     gl.drawArrays(gl.TRIANGLES, 17, 3);
 
-    gl.uniform1i(texPtr, 3);
+    gl.uniform1i(texPtr, 1);
     gl.drawArrays(gl.TRIANGLES, 20, 3);
     gl.drawArrays(gl.TRIANGLES, 22, 3);
 
-    gl.uniform1i(texPtr, 3);
+    gl.uniform1i(texPtr, 1);
     gl.drawArrays(gl.TRIANGLES, 25, 3);
     gl.drawArrays(gl.TRIANGLES, 27, 3);
 
@@ -575,6 +655,22 @@ function draw() {
     gl.uniform1i(texPtr, 3);
     gl.drawArrays(gl.TRIANGLES, 35, 3);
     gl.drawArrays(gl.TRIANGLES, 37, 3);
+
+    gl.uniform1i(texPtr, 3);
+    gl.drawArrays(gl.TRIANGLES, 40, 3);
+    gl.drawArrays(gl.TRIANGLES, 42, 3);
+
+    gl.uniform1i(texPtr, 3);
+    gl.drawArrays(gl.TRIANGLES, 45, 3);
+    gl.drawArrays(gl.TRIANGLES, 47, 3);
+
+    gl.uniform1i(texPtr, 3);
+    gl.drawArrays(gl.TRIANGLES, 50, 3);
+    gl.drawArrays(gl.TRIANGLES, 52, 3);
+
+    gl.uniform1i(texPtr, 3);
+    gl.drawArrays(gl.TRIANGLES, 55, 3);
+    gl.drawArrays(gl.TRIANGLES, 57, 3);
 
     angle += 0.1;
 
