@@ -1,5 +1,5 @@
 var teximg = [];
-var texSrc = ["assets/gato.jpg", "assets/parede.jpg", "assets/grama.webp", "assets/sun.jpeg"];
+var texSrc = ["assets/gato.jpg", "assets/parede.jpg", "assets/grama.webp", "assets/sun.jpeg", "assets/telha.jpg"];
 var loadTexs = 0;
 var gl;
 var prog;
@@ -7,7 +7,7 @@ var prog;
 var angle = 0;
 
 // Variáveis da câmera
-var cameraPosition = [-20, 5, 5];
+var cameraPosition = [15, 7, 30];
 var cameraSpeed = 1.5;
 var cameraRotationX = 0;
 var cameraRotationY = 0;
@@ -108,103 +108,97 @@ function configScene() {
         -1000, 0, 1000, 0.0, 1.0,
          1000, 0, 1000, 1.0, 1.0,
 
-        //Quad
-        10,  0, 10, 1.0, 1.0,
-        10, 10, 10, 1.0, 0.0,
-        10, 10,  0, 0.0, 0.0,
-        10,  0,  0, 0.0, 1.0,
-        10,  0, 10, 1.0, 1.0,
-
-        20, 10, 10, 0.0, 0.0,
-        20,  0, 10, 0.0, 1.0,
-        20,  0,  0, 1.0, 1.0,
-        20, 10,  0, 1.0, 0.0,
-        20, 10, 10, 0.0, 0.0,
-
-        20, 10,  0, 0.0, 0.0,
-        20,  0,  0, 0.0, 1.0,
-        10,  0,  0, 1.0, 1.0,
-        10, 10,  0, 1.0, 0.0,
-        20, 10,  0, 0.0, 0.0,
-
-        20,  0, 10, 1.0, 1.0,
-        20, 10, 10, 1.0, 0.0,
-        10, 10, 10, 0.0, 0.0,
-        10,  0, 10, 0.0, 1.0,
-        20,  0, 10, 1.0, 1.0,
-
-        10,  0, 10, 1.0, 1.0,
-        10, 10, 10, 1.0, 0.0,
-        10, 10,  0, 0.0, 0.0,
-        10,  0,  0, 0.0, 1.0,
-        10,  0, 10, 1.0, 1.0,
-
-        // Teto esquerda
-        10,  0, 10, 1.0, 1.0,
-        10, 10, 10, 1.0, 0.0,
-        10, 10,  0, 0.0, 0.0,
-        10,  0,  0, 0.0, 1.0,
-        10,  0, 10, 1.0, 1.0,
-        // Teto direita
-        20, 10, 10, 0.0, 0.0,
-        20,  0, 10, 0.0, 1.0,
-        20,  0,  0, 1.0, 1.0,
-        20, 10,  0, 1.0, 0.0,
-        20, 10, 10, 0.0, 0.0,
-        // Teto frente
-        20,  0, 10, 1.0, 1.0,
-        20, 10, 10, 1.0, 0.0,
-        10, 10, 10, 0.0, 0.0,
-        10,  0, 10, 0.0, 1.0,
-        20,  0, 10, 1.0, 1.0,
-        // Teto trás
-        20, 10,  0, 0.0, 0.0,
-        20,  0,  0, 0.0, 1.0,
-        10,  0,  0, 1.0, 1.0,
-        10, 10,  0, 1.0, 0.0,
-        20, 10,  0, 0.0, 0.0,
-
-        //Face 1
+         // Face 1
          45.0,  40.0, 40.0, 0.0, 0.0,
          40.0,  40.0, 40.0, 0.0, 1.0,
          40.0,  45.0, 40.0, 1.0, 1.0,
          45.0,  45.0, 40.0, 1.0, 0.0,
          45.0,  40.0, 40.0, 0.0, 0.0,
 
-        //Face 2
+        // Face 2
          40.0,  45.0, 40.0, 1.0, 1.0,
          40.0,  40.0, 40.0, 1.0, 0.0,
          40.0,  40.0, 45.0, 0.0, 0.0,
          40.0,  45.0, 45.0, 0.0, 1.0,
          40.0,  45.0, 40.0, 1.0, 1.0,
 
-        //Face 3
+        // Face 3
          40.0,  40.0, 45.0, 1.0, 1.0,
          40.0,  40.0, 40.0, 1.0, 0.0,
          45.0,  40.0, 40.0, 0.0, 0.0,
          45.0,  40.0, 45.0, 0.0, 1.0,
          40.0,  40.0, 45.0, 1.0, 1.0,
 
-        //Face 4
+        // Face 4
          45.0, 45.0, 40.0, 0.0, 0.0,
          40.0, 45.0, 40.0, 0.0, 1.0,
          40.0, 45.0, 45.0, 1.0, 1.0,
          45.0, 45.0, 45.0, 1.0, 0.0,
          45.0, 45.0, 40.0, 0.0, 0.0,
 
-        //Face 5
+        // Face 5
          40.0,  45.0, 45.0, 0.0, 0.0,
          40.0,  40.0, 45.0, 0.0, 1.0,
          45.0,  40.0, 45.0, 1.0, 1.0,
          45.0,  45.0, 45.0, 1.0, 0.0,
          40.0,  45.0, 45.0, 0.0, 0.0,
 
-        //Face 6
+        // Face 6
          45.0,  40.0, 45.0, 1.0, 1.0,
          45.0,  40.0, 40.0, 1.0, 0.0,
          45.0,  45.0, 40.0, 0.0, 0.0,
          45.0,  45.0, 45.0, 0.0, 1.0,
          45.0,  40.0, 45.0, 1.0, 1.0,
+
+        // Casa
+        10,  0, 10, 1.0, 1.0,
+        10, 10, 10, 1.0, 0.0,
+        10, 10,  0, 0.0, 0.0,
+        10,  0,  0, 0.0, 1.0,
+        10,  0, 10, 1.0, 1.0,
+
+        20, 10, 10, 0.0, 0.0,
+        20,  0, 10, 0.0, 1.0,
+        20,  0,  0, 1.0, 1.0,
+        20, 10,  0, 1.0, 0.0,
+        20, 10, 10, 0.0, 0.0,
+
+        20, 10,  0, 0.0, 0.0,
+        20,  0,  0, 0.0, 1.0,
+        10,  0,  0, 1.0, 1.0,
+        10, 10,  0, 1.0, 0.0,
+        20, 10,  0, 0.0, 0.0,
+
+        20,  0, 10, 1.0, 1.0,
+        20, 10, 10, 1.0, 0.0,
+        10, 10, 10, 0.0, 0.0,
+        10,  0, 10, 0.0, 1.0,
+        20,  0, 10, 1.0, 1.0,
+
+        // Teto esquerda
+        10, 10, 10, 1.0, 1.0,
+        15, 12, 10, 1.0, 0.0,
+        15, 12,  0, 0.0, 0.0,
+        10, 10,  0, 0.0, 1.0,
+        10, 10, 10, 1.0, 1.0,
+        // Teto direita
+        15, 12, 10, 0.0, 0.0,
+        20, 10, 10, 0.0, 1.0,
+        20, 10,  0, 1.0, 1.0,
+        15, 12,  0, 1.0, 0.0,
+        15, 12, 10, 0.0, 0.0,
+        // Teto frente
+        20,  10, 10, 0.0, 0.0,
+        15,  12, 10, 0.0, 1.0,
+        15,  12, 10, 1.0, 1.0,
+        10,  10, 10, 1.0, 0.0,
+        20,  10, 10, 0.0, 0.0,
+        // Teto trás
+        10, 10,  0, 0.0, 0.0,
+        15, 12,  0, 0.0, 1.0,
+        15, 12,  0, 1.0, 1.0,
+        20, 10,  0, 1.0, 0.0,
+        10, 10,  0, 0.0, 0.0,
 
     ]);
 
@@ -250,6 +244,18 @@ function configScene() {
         0, 1, 0,
         0, 1, 0,
         0, 1, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
 
         1, 0, 0,
         1, 0, 0,
@@ -397,6 +403,15 @@ function configScene() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[3]);
+
+    var tex4 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE4);
+    gl.bindTexture(gl.TEXTURE_2D, tex4);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[4]);
 }
 
 function createPerspective(fovy, aspect, near, far) {
@@ -624,27 +639,29 @@ function draw() {
 
     //desenha triângulos - executa shaders
     var texPtr = gl.getUniformLocation(prog, "tex");
-    gl.uniform1i(texPtr, 2);
+    // Chão
+    gl.uniform1i(texPtr, 2); 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.drawArrays(gl.TRIANGLES, 2, 3);
 
-    gl.uniform1i(texPtr, 1);
+    // Sol
+    gl.uniform1i(texPtr, 3);
     gl.drawArrays(gl.TRIANGLES, 5, 3);
     gl.drawArrays(gl.TRIANGLES, 7, 3);
 
-    gl.uniform1i(texPtr, 1);
+    gl.uniform1i(texPtr, 3);
     gl.drawArrays(gl.TRIANGLES, 10, 3);
     gl.drawArrays(gl.TRIANGLES, 12, 3);
 
-    gl.uniform1i(texPtr, 1);
+    gl.uniform1i(texPtr, 3);
     gl.drawArrays(gl.TRIANGLES, 15, 3);
     gl.drawArrays(gl.TRIANGLES, 17, 3);
 
-    gl.uniform1i(texPtr, 1);
+    gl.uniform1i(texPtr, 3);
     gl.drawArrays(gl.TRIANGLES, 20, 3);
     gl.drawArrays(gl.TRIANGLES, 22, 3);
 
-    gl.uniform1i(texPtr, 1);
+    gl.uniform1i(texPtr, 3);
     gl.drawArrays(gl.TRIANGLES, 25, 3);
     gl.drawArrays(gl.TRIANGLES, 27, 3);
 
@@ -652,25 +669,40 @@ function draw() {
     gl.drawArrays(gl.TRIANGLES, 30, 3);
     gl.drawArrays(gl.TRIANGLES, 32, 3);
 
-    gl.uniform1i(texPtr, 3);
+    // Casa
+    gl.uniform1i(texPtr, 1);
     gl.drawArrays(gl.TRIANGLES, 35, 3);
     gl.drawArrays(gl.TRIANGLES, 37, 3);
 
-    gl.uniform1i(texPtr, 3);
+    gl.uniform1i(texPtr, 1);
     gl.drawArrays(gl.TRIANGLES, 40, 3);
     gl.drawArrays(gl.TRIANGLES, 42, 3);
 
-    gl.uniform1i(texPtr, 3);
+    gl.uniform1i(texPtr, 1);
     gl.drawArrays(gl.TRIANGLES, 45, 3);
     gl.drawArrays(gl.TRIANGLES, 47, 3);
 
-    gl.uniform1i(texPtr, 3);
+    gl.uniform1i(texPtr, 1);
     gl.drawArrays(gl.TRIANGLES, 50, 3);
     gl.drawArrays(gl.TRIANGLES, 52, 3);
 
-    gl.uniform1i(texPtr, 3);
+    // Teto
+
+    gl.uniform1i(texPtr, 4);
     gl.drawArrays(gl.TRIANGLES, 55, 3);
     gl.drawArrays(gl.TRIANGLES, 57, 3);
+
+    gl.uniform1i(texPtr, 4);
+    gl.drawArrays(gl.TRIANGLES, 60, 3);
+    gl.drawArrays(gl.TRIANGLES, 62, 3);
+
+    gl.uniform1i(texPtr, 1);
+    gl.drawArrays(gl.TRIANGLES, 65, 3);
+    gl.drawArrays(gl.TRIANGLES, 67, 3);
+
+    gl.uniform1i(texPtr, 1);
+    gl.drawArrays(gl.TRIANGLES, 70, 3);
+    gl.drawArrays(gl.TRIANGLES, 72, 3);
 
     angle += 0.1;
 
