@@ -1,5 +1,12 @@
 var teximg = [];
-var texSrc = ["assets/gato.jpg", "assets/parede.jpg", "assets/grama.webp", "assets/sun.jpeg", "assets/telha.jpg"];
+var texSrc = [
+    "assets/gato.jpg",
+    "assets/parede.jpg",
+    "assets/grama.webp",
+    "assets/sun.jpeg",
+    "assets/telha.jpg",
+    "assets/parede-porta.jpg"
+];
 var loadTexs = 0;
 var gl;
 var prog;
@@ -11,7 +18,7 @@ var cameraPosition = [15, 7, 30];
 var cameraSpeed = 1.5;
 var cameraRotationX = 0;
 var cameraRotationY = 0;
-var lookAt = [5, 6, 5];
+var lookAt = [145, 140, 140];
 
 function getGL(canvas) {
     var gl = canvas.getContext("webgl");
@@ -88,7 +95,7 @@ function initGL() {
 
         //Inicializa área de desenho: viewport e cor de limpeza; limpa a tela
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clearColor(0.3, 0.7, 0.65, 1);
+        gl.clearColor(0.4, 0.6, 0.7, 1);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.enable(gl.DEPTH_TEST);
@@ -108,49 +115,44 @@ function configScene() {
         -1000, 0, 1000, 0.0, 1.0,
          1000, 0, 1000, 1.0, 1.0,
 
-         // Face 1
-         45.0,  40.0, 40.0, 0.0, 0.0,
-         40.0,  40.0, 40.0, 0.0, 1.0,
-         40.0,  45.0, 40.0, 1.0, 1.0,
-         45.0,  45.0, 40.0, 1.0, 0.0,
-         45.0,  40.0, 40.0, 0.0, 0.0,
+         // Sol
+         265.0,  240.0, 240.0, 0.0, 0.0,
+         240.0,  240.0, 240.0, 0.0, 1.0,
+         240.0,  265.0, 240.0, 1.0, 1.0,
+         265.0,  265.0, 240.0, 1.0, 0.0,
+         265.0,  240.0, 240.0, 0.0, 0.0,
 
-        // Face 2
-         40.0,  45.0, 40.0, 1.0, 1.0,
-         40.0,  40.0, 40.0, 1.0, 0.0,
-         40.0,  40.0, 45.0, 0.0, 0.0,
-         40.0,  45.0, 45.0, 0.0, 1.0,
-         40.0,  45.0, 40.0, 1.0, 1.0,
+         240.0,  265.0, 240.0, 1.0, 1.0,
+         240.0,  240.0, 240.0, 1.0, 0.0,
+         240.0,  240.0, 265.0, 0.0, 0.0,
+         240.0,  265.0, 265.0, 0.0, 1.0,
+         240.0,  265.0, 240.0, 1.0, 1.0,
 
-        // Face 3
-         40.0,  40.0, 45.0, 1.0, 1.0,
-         40.0,  40.0, 40.0, 1.0, 0.0,
-         45.0,  40.0, 40.0, 0.0, 0.0,
-         45.0,  40.0, 45.0, 0.0, 1.0,
-         40.0,  40.0, 45.0, 1.0, 1.0,
+         240.0,  240.0, 265.0, 1.0, 1.0,
+         240.0,  240.0, 240.0, 1.0, 0.0,
+         265.0,  240.0, 240.0, 0.0, 0.0,
+         265.0,  240.0, 265.0, 0.0, 1.0,
+         240.0,  240.0, 265.0, 1.0, 1.0,
 
-        // Face 4
-         45.0, 45.0, 40.0, 0.0, 0.0,
-         40.0, 45.0, 40.0, 0.0, 1.0,
-         40.0, 45.0, 45.0, 1.0, 1.0,
-         45.0, 45.0, 45.0, 1.0, 0.0,
-         45.0, 45.0, 40.0, 0.0, 0.0,
+         265.0,  265.0, 240.0, 0.0, 0.0,
+         240.0,  265.0, 240.0, 0.0, 1.0,
+         240.0,  265.0, 265.0, 1.0, 1.0,
+         265.0,  265.0, 265.0, 1.0, 0.0,
+         265.0,  265.0, 240.0, 0.0, 0.0,
 
-        // Face 5
-         40.0,  45.0, 45.0, 0.0, 0.0,
-         40.0,  40.0, 45.0, 0.0, 1.0,
-         45.0,  40.0, 45.0, 1.0, 1.0,
-         45.0,  45.0, 45.0, 1.0, 0.0,
-         40.0,  45.0, 45.0, 0.0, 0.0,
+         240.0,  265.0, 265.0, 0.0, 0.0,
+         240.0,  240.0, 265.0, 0.0, 1.0,
+         265.0,  240.0, 265.0, 1.0, 1.0,
+         265.0,  265.0, 265.0, 1.0, 0.0,
+         240.0,  265.0, 265.0, 0.0, 0.0,
 
-        // Face 6
-         45.0,  40.0, 45.0, 1.0, 1.0,
-         45.0,  40.0, 40.0, 1.0, 0.0,
-         45.0,  45.0, 40.0, 0.0, 0.0,
-         45.0,  45.0, 45.0, 0.0, 1.0,
-         45.0,  40.0, 45.0, 1.0, 1.0,
+         265.0,  240.0, 265.0, 1.0, 1.0,
+         265.0,  240.0, 240.0, 1.0, 0.0,
+         265.0,  265.0, 240.0, 0.0, 0.0,
+         265.0,  265.0, 265.0, 0.0, 1.0,
+         265.0,  240.0, 265.0, 1.0, 1.0,
 
-        // Casa
+        // Casa 1
         10,  0, 10, 1.0, 1.0,
         10, 10, 10, 1.0, 0.0,
         10, 10,  0, 0.0, 0.0,
@@ -412,6 +414,15 @@ function configScene() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[4]);
+
+    var tex5 = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE5);
+    gl.bindTexture(gl.TEXTURE_2D, tex5);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[5]);
 }
 
 function createPerspective(fovy, aspect, near, far) {
@@ -682,7 +693,7 @@ function draw() {
     gl.drawArrays(gl.TRIANGLES, 45, 3);
     gl.drawArrays(gl.TRIANGLES, 47, 3);
 
-    gl.uniform1i(texPtr, 1);
+    gl.uniform1i(texPtr, 5);
     gl.drawArrays(gl.TRIANGLES, 50, 3);
     gl.drawArrays(gl.TRIANGLES, 52, 3);
 
