@@ -1,11 +1,12 @@
 var teximg = [];
 var texSrc = [
-    "assets/gato.jpg",
+    "assets/yeah.jpg",
     "assets/parede.jpg",
     "assets/grama.webp",
     "assets/sun.jpeg",
     "assets/telha.jpg",
-    "assets/parede-porta.jpg"
+    "assets/parede-porta.jpg",
+    "assets/taca.jpg"
 ];
 var loadTexs = 0;
 var gl;
@@ -13,12 +14,14 @@ var prog;
 
 var angle = 0;
 
+var reached = false;
+
 // Variáveis da câmera
-var cameraPosition = [15, 7, 30];
+var cameraPosition = [55, 7, 150];
 var cameraSpeed = 1.5;
 var cameraRotationX = 0;
 var cameraRotationY = 0;
-var lookAt = [145, 140, 140];
+var lookAt = [55, 7, 0];
 
 function getGL(canvas) {
     var gl = canvas.getContext("webgl");
@@ -252,6 +255,56 @@ function configScene() {
         60, 10, 10, 1.0, 0.0,
         50, 10, 10, 0.0, 0.0,
 
+        // Casa 3
+        90,  0, 20, 1.0, 1.0,
+        90, 10, 20, 1.0, 0.0,
+        90, 10, 10, 0.0, 0.0,
+        90,  0, 10, 0.0, 1.0,
+        90,  0, 20, 1.0, 1.0,
+
+        100, 10, 20, 0.0, 0.0,
+        100,  0, 20, 0.0, 1.0,
+        100,  0, 10, 1.0, 1.0,
+        100, 10, 10, 1.0, 0.0,
+        100, 10, 20, 0.0, 0.0,
+
+        100, 10, 10, 0.0, 0.0,
+        100,  0, 10, 0.0, 1.0,
+         90,  0, 10, 1.0, 1.0,
+         90, 10, 10, 1.0, 0.0,
+        100, 10, 10, 0.0, 0.0,
+
+        100,  0, 20, 1.0, 1.0,
+        100, 10, 20, 1.0, 0.0,
+         90, 10, 20, 0.0, 0.0,
+         90,  0, 20, 0.0, 1.0,
+        100,  0, 20, 1.0, 1.0,
+
+        // Teto esquerda
+        90, 10, 20, 1.0, 1.0,
+        95, 12, 20, 1.0, 0.0,
+        95, 12, 10, 0.0, 0.0,
+        90, 10, 10, 0.0, 1.0,
+        90, 10, 20, 1.0, 1.0,
+        // Teto direita
+         95, 12, 20, 0.0, 0.0,
+        100, 10, 20, 0.0, 1.0,
+        100, 10, 10, 1.0, 1.0,
+         95, 12, 10, 1.0, 0.0,
+         95, 12, 20, 0.0, 0.0,
+        // Teto frente
+        100, 10, 20, 0.0, 0.0,
+         95, 12, 20, 0.0, 1.0,
+         95, 12, 20, 1.0, 1.0,
+         90, 10, 20, 1.0, 0.0,
+        100, 10, 20, 0.0, 0.0,
+        // Teto trás
+        90,  10, 10, 0.0, 0.0,
+         95, 12, 10, 0.0, 1.0,
+         95, 12, 10, 1.0, 1.0,
+        100, 10, 10, 1.0, 0.0,
+         90, 10, 10, 0.0, 0.0,
+
     ]);
 
     //Cria buffer na GPU e copia coordenadas para ele
@@ -335,6 +388,55 @@ function configScene() {
         1, 0, 0,
 
         // Casa 1
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+        1, 0, 0,
+
+        // Casa 2
         1, 0, 0,
         1, 0, 0,
         1, 0, 0,
@@ -648,6 +750,19 @@ document.addEventListener('pointerlockchange', function () {
     }
 });
 
+function checkCameraPosition(cameraPosition) {
+    if (cameraPosition[0] >= 10 && cameraPosition[0] <= 20 &&
+        cameraPosition[2] >= 10 && cameraPosition[2] <= 20) {
+        switchShadersAndScript('newScript1.js', 'vertexShader1.glsl', 'fragmentShader1.glsl');
+    } else if (cameraPosition[0] >= 50 && cameraPosition[0] <= 60 &&
+               cameraPosition[2] >= 10 && cameraPosition[2] <= 20) {
+        switchShadersAndScript('newScript2.js', 'vertexShader2.glsl', 'fragmentShader2.glsl');
+    } else if (cameraPosition[0] >= 90 && cameraPosition[0] <= 100 &&
+               cameraPosition[2] >= 10 && cameraPosition[2] <= 20) {
+        switchShadersAndScript('newScript3.js', 'vertexShader3.glsl', 'fragmentShader3.glsl');
+    }
+}
+
 function handleKeyDown(event) {
     var forwardDirection = [
         Math.sin(cameraRotationY * Math.PI / 180.0),
@@ -680,6 +795,25 @@ function handleKeyDown(event) {
 
     lookAt[0] = cameraPosition[0] + forwardDirection[0];
     lookAt[2] = cameraPosition[2] + forwardDirection[2];
+
+    if (
+        cameraPosition[0] >= 10 && cameraPosition[0] <= 20 &&
+        cameraPosition[2] >= 10 && cameraPosition[2] <= 20
+    ) {
+        window.location.href = 'congrats.html';
+    }
+    if (
+        cameraPosition[0] >= 50 && cameraPosition[0] <= 60 &&
+        cameraPosition[2] >= 10 && cameraPosition[2] <= 20
+    ) {
+        window.location.href = 'loss.html';
+    }
+    if (
+        cameraPosition[0] >= 90 && cameraPosition[0] <= 100 &&
+        cameraPosition[2] >= 10 && cameraPosition[2] <= 20
+    ) {
+        window.location.href = 'loss.html';
+    }
 
     updateViewMatrix();
 }
@@ -718,34 +852,7 @@ function draw() {
         [Math.sin(angleZ * Math.PI / 180.0), Math.cos(angleZ * Math.PI / 180.0), 0.0, 0.0],
         [0.0, 0.0, 1.0, 0.0],
         [0.0, 0.0, 0.0, 1.0]
-    ]);
-
-    // var transforma = math.matrix([[1, 0, 0, 0],
-    //                               [0, 1, 0, 0],
-    //                               [0, 0, 1, 0],
-    //                               [0, 0, 0, 1]]);
-
-    // var transforma = math.matrix(
-    //     [[Math.cos(angle * Math.PI / 180.0), -Math.sin(angle * Math.PI / 180.0), 0.0, 0.0],
-    //     [Math.sin(angle * Math.PI / 180.0), Math.cos(angle * Math.PI / 180.0), 0.0, 0.0],
-    //     [0.0, 0.0, 1.0, 0.0],
-    //     [0.0, 0.0, 0.0, 1.0]]
-    // );
-
-    // var transforma = math.multiply(matrotY, matrotX); 
-    // transforma = math.multiply(matrotZ, transforma);
-
-    // var transformaproj = math.multiply(cam, transforma);
-    // transformaproj = math.multiply(mproj, transformaproj);
-
-    // transformaproj = math.flatten(math.transpose(transformaproj))._data;
-    // var transfprojPtr = gl.getUniformLocation(prog, "transfproj");
-    // gl.uniformMatrix4fv(transfprojPtr, false, transformaproj);
-
-    // transforma = math.flatten(math.transpose(transforma))._data;
-    // transfPtr = gl.getUniformLocation(prog, "transf");
-    // gl.uniformMatrix4fv(transfPtr, false, transforma);
-   
+    ]);   
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -849,7 +956,42 @@ function draw() {
     gl.drawArrays(gl.TRIANGLES, 110, 3);
     gl.drawArrays(gl.TRIANGLES, 112, 3);
 
-    angle += 0.1;
+    // Casa 2
+    gl.uniform1i(texPtr, 1);
+    gl.drawArrays(gl.TRIANGLES, 115, 3);
+    gl.drawArrays(gl.TRIANGLES, 117, 3);
+
+    gl.uniform1i(texPtr, 1);
+    gl.drawArrays(gl.TRIANGLES, 120, 3);
+    gl.drawArrays(gl.TRIANGLES, 122, 3);
+
+    gl.uniform1i(texPtr, 1);
+    gl.drawArrays(gl.TRIANGLES, 1125, 3);
+    gl.drawArrays(gl.TRIANGLES, 127, 3);
+
+    gl.uniform1i(texPtr, 5);
+    gl.drawArrays(gl.TRIANGLES, 130, 3);
+    gl.drawArrays(gl.TRIANGLES, 132, 3);
+
+    // Teto
+    gl.uniform1i(texPtr, 4);
+    gl.drawArrays(gl.TRIANGLES, 135, 3);
+    gl.drawArrays(gl.TRIANGLES, 137, 3);
+
+    gl.uniform1i(texPtr, 4);
+    gl.drawArrays(gl.TRIANGLES, 140, 3);
+    gl.drawArrays(gl.TRIANGLES, 142, 3);
+
+    gl.uniform1i(texPtr, 1);
+    gl.drawArrays(gl.TRIANGLES, 145, 3);
+    gl.drawArrays(gl.TRIANGLES, 147, 3);
+
+    gl.uniform1i(texPtr, 1);
+    gl.drawArrays(gl.TRIANGLES, 150, 3);
+    gl.drawArrays(gl.TRIANGLES, 152, 3);
+
+
+    angle ++;
 
     requestAnimationFrame(draw);
 }
