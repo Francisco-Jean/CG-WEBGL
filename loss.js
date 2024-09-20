@@ -59,8 +59,13 @@ function loadTextures() {
     if (loadTexs == texSrc.length) {
         initGL();
         configScene();
-        congrats();
+        setTimeout(() => backToGame(), 5000);
+        loss();
     }
+}
+
+function backToGame() {
+    window.location.href = "webgl.html";
 }
 
 function initGL() {
@@ -224,7 +229,7 @@ function createCamera(pos, target, up) {
     return cam;
 }
 
-function congrats() {
+function loss() {
     var mproj = createPerspective(20, gl.canvas.width / gl.canvas.height, 1, 50);
     var cam = createCamera([7, 7, 7], [0, 0, 0], [7, 8, 7]);
 
@@ -297,5 +302,5 @@ function congrats() {
 
     angle++;
 
-    requestAnimationFrame(congrats);
+    requestAnimationFrame(loss);
 }
