@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>Web GL</title>
+    </head>
+
+    <script src="math.js"></script>
+    <script src="loss.js"></script>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+
+            /* Center the canvas */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #glcanvas1 {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+    <script id="vertex-shader" type="notjs">
+        attribute vec4 position;
+        attribute vec2 texCoord;
+        uniform mat4 transf;
+
+        varying vec2 v_texCoord;
+
+        void main()
+        {
+            v_texCoord = texCoord;
+            gl_Position = transf*position;
+        }
+    </script>
+
+    <script id="frag-shader" type="notjs">
+        precision mediump float;
+
+        uniform sampler2D tex;
+
+        varying vec2 v_texCoord;
+
+        void main()
+        {
+            gl_FragColor = texture2D(tex, v_texCoord);
+        }
+    </script>
+
+    <body onload="init()">
+
+        <canvas id="glcanvas1" width="1280" height="720"></canvas>
+
+    </body>
+
+</html>
