@@ -1,21 +1,109 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
- <head>
-  <title>Index of /~yuri/20231/cg/webgl/aula7</title>
- </head>
- <body>
-<h1>Index of /~yuri/20231/cg/webgl/aula7</h1>
-  <table>
-   <tr><th valign="top"><img src="/icons/blank.gif" alt="[ICO]"></th><th><a href="?C=N;O=D">Name</a></th><th><a href="?C=M;O=A">Last modified</a></th><th><a href="?C=S;O=A">Size</a></th><th><a href="?C=D;O=A">Description</a></th></tr>
-   <tr><th colspan="5"><hr></th></tr>
-<tr><td valign="top"><img src="/icons/back.gif" alt="[PARENTDIR]"></td><td><a href="/~yuri/20231/cg/webgl/">Parent Directory</a></td><td>&nbsp;</td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><img src="/icons/image2.gif" alt="[IMG]"></td><td><a href="cachorro.png">cachorro.png</a></td><td align="right">2023-06-22 15:26  </td><td align="right">158K</td><td>&nbsp;</td></tr>
-<tr><td valign="top"><img src="/icons/image2.gif" alt="[IMG]"></td><td><a href="gato.jpg">gato.jpg</a></td><td align="right">2023-06-22 15:26  </td><td align="right"> 49K</td><td>&nbsp;</td></tr>
-<tr><td valign="top"><img src="/icons/unknown.gif" alt="[   ]"></td><td><a href="math.js">math.js</a></td><td align="right">2023-06-22 15:26  </td><td align="right">700K</td><td>&nbsp;</td></tr>
-<tr><td valign="top"><img src="/icons/unknown.gif" alt="[   ]"></td><td><a href="math.js.map">math.js.map</a></td><td align="right">2023-06-22 15:26  </td><td align="right">3.2M</td><td>&nbsp;</td></tr>
-<tr><td valign="top"><img src="/icons/text.gif" alt="[TXT]"></td><td><a href="webgl.html">webgl.html</a></td><td align="right">2023-06-22 15:26  </td><td align="right">1.8K</td><td>&nbsp;</td></tr>
-<tr><td valign="top"><img src="/icons/unknown.gif" alt="[   ]"></td><td><a href="webgl.js">webgl.js</a></td><td align="right">2023-06-22 15:26  </td><td align="right"> 12K</td><td>&nbsp;</td></tr>
-   <tr><th colspan="5"><hr></th></tr>
-</table>
-<address>Apache/2.4.38 (Debian) Server at www.lia.ufc.br Port 443</address>
-</body></html>
+
+<head>
+<title>Hello CG</title>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        width: 90%;
+        height: 90%;
+
+        /* Center the canvas */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #glcanvas1 {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+</head>
+
+<script src="math.js"></script>
+<script src="webgl.js"></script>
+
+<script id="vertex-shader" type="notjs">
+attribute vec4 position;
+attribute vec2 texCoord;
+uniform mat4 transfproj;
+uniform mat4 transf;
+
+varying vec2 v_texCoord;
+
+attribute vec3 normal;
+varying vec3 v_normal;
+
+uniform vec3 lightpos;
+varying vec3 pointToLight;
+
+uniform vec3 campos;
+varying vec3 pointToCam;
+
+void main()
+{
+    pointToLight = lightpos - position.xyz;
+    pointToCam = campos - position.xyz;
+
+    v_normal = (transf*vec4(normal, 1.0)).xyz;
+    
+	v_texCoord = texCoord;
+	gl_Position = transfproj*position;
+}
+</script>
+
+<script id="frag-shader" type="notjs">
+precision mediump float;
+
+uniform sampler2D tex;
+
+varying vec2 v_texCoord;
+
+varying vec3 v_normal;
+uniform vec3 lightDirection;
+uniform vec3 lightColor;
+
+varying vec3 pointToLight;
+varying vec3 pointToCam;
+
+void main()
+{
+
+    vec3 pToLight = normalize(pointToLight);
+    vec3 pToCam = normalize(pointToCam);
+    
+    vec3 halfVec = normalize(pToCam + pToLight);
+    
+    vec3 v_normal_n = normalize(v_normal);
+    vec3 lightDirection_n = normalize(-lightDirection);
+    
+    float lightd = dot(v_normal_n, lightDirection_n);
+    float lightp = dot(v_normal_n, pToLight);
+    float lighte = dot(v_normal_n, halfVec);
+    
+    if(lightd < 0.0) lightd = 0.0;
+    if(lightp < 0.0) lightp = 0.0;
+    if(lighte < 0.0) lighte = 0.0;
+    
+    vec3 texColor = texture2D(tex, v_texCoord).rgb;
+    
+    gl_FragColor.rgb = 0.2*lightColor*texColor;
+    gl_FragColor.rgb += 0.2*lightColor*lightd*texColor;    
+    gl_FragColor.rgb += 0.5*lightColor*lightp*texColor;
+    gl_FragColor.rgb += lightColor*pow(lighte, 100.0)*texColor;    
+    
+    gl_FragColor.a = texture2D(tex, v_texCoord).a;
+}
+</script>
+
+<body onload="init()">
+
+<canvas id="glcanvas1" width="1080" height="720"></canvas>
+
+</body>
+
+</html>
