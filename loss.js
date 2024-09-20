@@ -65,7 +65,7 @@ function loadTextures() {
 }
 
 function backToGame() {
-    window.location.href = "webgl.html";
+    window.location.href = "index.html";
 }
 
 function initGL() {
