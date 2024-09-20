@@ -2,12 +2,17 @@ var teximg = [];
 var texSrc = [
     "assets/yeah.jpg",
     "assets/parede.jpg",
-    "assets/grama.webp",
-    "assets/sun.jpeg",
+    "assets/chess.jpg",
+    "assets/cubo.jpg",
     "assets/telha.jpg",
     "assets/parede-porta.jpg",
-    "assets/taca.jpg"
+    "assets/taca.jpg",
+    "assets/grama.webp",
+    "assets/grama2.jpg",
+    "assets/grama3.jpg",
 ];
+
+var texGrama;
 var loadTexs = 0;
 var gl;
 var prog;
@@ -17,12 +22,13 @@ var angle = 0;
 var reached = false;
 
 // Variáveis da câmera
-var cameraPosition = [55, 7, 150];
+var cameraPosition = [55, 7, 100];
 var cameraSpeed = 1.5;
 var cameraRotationX = 0;
 var cameraRotationY = 0;
 var lookAt = [55, 7, 0];
 
+// Rotação de luz
 function getGL(canvas) {
     var gl = canvas.getContext("webgl");
     if (gl) return gl;
@@ -98,7 +104,7 @@ function initGL() {
 
         //Inicializa área de desenho: viewport e cor de limpeza; limpa a tela
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        gl.clearColor(0.4, 0.6, 0.7, 1);
+        gl.clearColor(0.02, 0.02, 0.09, 1);
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         gl.enable(gl.DEPTH_TEST);
@@ -107,55 +113,312 @@ function initGL() {
     }
 }
 
+function rotateVertices(vertices, angleX, angleY, angleZ) {
+    const radiansX = angleX * Math.PI / 180.0;
+    const radiansY = angleY * Math.PI / 180.0;
+    const radiansZ = angleZ * Math.PI / 180.0;
 
-function configScene() {
-    //Define coordenadas dos triângulos
-    var coordTriangles = new Float32Array([
-        //Piso
-         1000, 0, 1000, 1.0, 1.0,
-         1000, 0, 0.0 , 1.0, 0.0,
-        -1000, 0, 0.0 , 0.0, 0.0,
-        -1000, 0, 1000, 0.0, 1.0,
-         1000, 0, 1000, 1.0, 1.0,
+    // Matrizes de rotação
+    const matrotX = [
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, Math.cos(radiansX), -Math.sin(radiansX), 0.0],
+        [0.0, Math.sin(radiansX), Math.cos(radiansX), 0.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ];
 
-         // Sol
-         265.0,  240.0, 240.0, 0.0, 0.0,
-         240.0,  240.0, 240.0, 0.0, 1.0,
-         240.0,  265.0, 240.0, 1.0, 1.0,
-         265.0,  265.0, 240.0, 1.0, 0.0,
-         265.0,  240.0, 240.0, 0.0, 0.0,
+    const matrotY = [
+        [Math.cos(radiansY), 0.0, Math.sin(radiansY), 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [-Math.sin(radiansY), 0.0, Math.cos(radiansY), 0.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ];
 
-         240.0,  265.0, 240.0, 1.0, 1.0,
-         240.0,  240.0, 240.0, 1.0, 0.0,
-         240.0,  240.0, 265.0, 0.0, 0.0,
-         240.0,  265.0, 265.0, 0.0, 1.0,
-         240.0,  265.0, 240.0, 1.0, 1.0,
+    const matrotZ = [
+        [Math.cos(radiansZ), -Math.sin(radiansZ), 0.0, 0.0],
+        [Math.sin(radiansZ), Math.cos(radiansZ), 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ];
 
-         240.0,  240.0, 265.0, 1.0, 1.0,
-         240.0,  240.0, 240.0, 1.0, 0.0,
-         265.0,  240.0, 240.0, 0.0, 0.0,
-         265.0,  240.0, 265.0, 0.0, 1.0,
-         240.0,  240.0, 265.0, 1.0, 1.0,
+    // Função para multiplicar um vetor por uma matriz de rotação
+    function multiplyMatrixAndPoint(matrix, point) {
+        const [x, y, z] = point;
+        const result = [
+            matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z + matrix[0][3],
+            matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z + matrix[1][3],
+            matrix[2][0] * x + matrix[2][1] * y + matrix[2][2] * z + matrix[2][3],
+            matrix[3][0] * x + matrix[3][1] * y + matrix[3][2] * z + matrix[3][3]
+        ];
+        return result.slice(0, 3);  // Desconsidera o valor W, retornando (x, y, z)
+    }
 
-         265.0,  265.0, 240.0, 0.0, 0.0,
-         240.0,  265.0, 240.0, 0.0, 1.0,
-         240.0,  265.0, 265.0, 1.0, 1.0,
-         265.0,  265.0, 265.0, 1.0, 0.0,
-         265.0,  265.0, 240.0, 0.0, 0.0,
+    // Calcula o centro do objeto
+    let centerX = 0, centerY = 0, centerZ = 0;
+    let numVertices = vertices.length / 5;
 
-         240.0,  265.0, 265.0, 0.0, 0.0,
-         240.0,  240.0, 265.0, 0.0, 1.0,
-         265.0,  240.0, 265.0, 1.0, 1.0,
-         265.0,  265.0, 265.0, 1.0, 0.0,
-         240.0,  265.0, 265.0, 0.0, 0.0,
+    for (let i = 0; i < vertices.length; i += 5) {
+        centerX += vertices[i];
+        centerY += vertices[i + 1];
+        centerZ += vertices[i + 2];
+    }
 
-         265.0,  240.0, 265.0, 1.0, 1.0,
-         265.0,  240.0, 240.0, 1.0, 0.0,
-         265.0,  265.0, 240.0, 0.0, 0.0,
-         265.0,  265.0, 265.0, 0.0, 1.0,
-         265.0,  240.0, 265.0, 1.0, 1.0,
+    centerX /= numVertices;
+    centerY /= numVertices;
+    centerZ /= numVertices;
 
-        // Casa 1
+    // Matriz de saída para armazenar os vértices rotacionados
+    const rotatedVertices = [];
+
+    // Para cada vértice na matriz, aplique as rotações
+    for (let i = 0; i < vertices.length; i += 5) {
+        // Translada o vértice para a origem
+        const vertex = [vertices[i] - centerX, vertices[i + 1] - centerY, vertices[i + 2] - centerZ, 1.0];  // (x, y, z, 1.0)
+
+        // Aplicar rotação em X, Y e Z
+        let rotatedVertex = multiplyMatrixAndPoint(matrotX, vertex);
+        rotatedVertex = multiplyMatrixAndPoint(matrotY, rotatedVertex);
+        rotatedVertex = multiplyMatrixAndPoint(matrotZ, rotatedVertex);
+
+        // Translada o vértice de volta para a posição original
+        rotatedVertex[0] += centerX;
+        rotatedVertex[1] += centerY;
+        rotatedVertex[2] += centerZ;
+
+        // Manter as coordenadas de textura inalteradas (os últimos dois elementos)
+        rotatedVertices.push(rotatedVertex[0], rotatedVertex[1], rotatedVertex[2], vertices[i + 3], vertices[i + 4]);
+    }
+
+    return new Float32Array(rotatedVertices);
+}
+
+function multiplyMatrices(a, b) {
+    var result = new Float32Array(16);
+    for (var i = 0; i < 4; i++) {
+        for (var j = 0; j < 4; j++) {
+            result[i * 4 + j] = 0;
+            for (var k = 0; k < 4; k++) {
+                result[i * 4 + j] += a[i * 4 + k] * b[k * 4 + j];
+            }
+        }
+    }
+    return result;
+}
+
+function createTranslationMatrix(tx, ty, tz) {
+    return new Float32Array([
+        1, 0, 0, tx,
+        0, 1, 0, ty,
+        0, 0, 1, tz,
+        0, 0, 0, 1
+    ]);
+}
+
+function createScaleMatrix(sx, sy, sz) {
+    return new Float32Array([
+        sx, 0, 0, 0,
+        0, sy, 0, 0,
+        0, 0, sz, 0,
+        0, 0, 0, 1
+    ]);
+}
+
+function applyTransformation(vertices, transformationMatrix) {
+    var transformedVertices = [];
+    for (var i = 0; i < vertices.length; i += 5) {
+        var x = vertices[i];
+        var y = vertices[i + 1];
+        var z = vertices[i + 2];
+        var u = vertices[i + 3];
+        var v = vertices[i + 4];
+
+        var nx = transformationMatrix[0] * x + transformationMatrix[1] * y + transformationMatrix[2] * z + transformationMatrix[3];
+        var ny = transformationMatrix[4] * x + transformationMatrix[5] * y + transformationMatrix[6] * z + transformationMatrix[7];
+        var nz = transformationMatrix[8] * x + transformationMatrix[9] * y + transformationMatrix[10] * z + transformationMatrix[11];
+
+        transformedVertices.push(nx, ny, nz, u, v);
+    }
+    return new Float32Array(transformedVertices);
+}
+
+function translateVertices(vertices, tx, ty, tz) {
+    var translationMatrix = createTranslationMatrix(tx, ty, tz);
+
+    return applyTransformation(vertices, translationMatrix);
+}
+
+function scaleVertices(vertices, escX, escY, escZ) {
+    var centerX = 0, centerY = 0, centerZ = 0;
+    var numVertices = vertices.length / 5;
+
+    // Calcular o centro do vetor
+    for (var i = 0; i < vertices.length; i += 5) {
+        centerX += vertices[i];
+        centerY += vertices[i + 1];
+        centerZ += vertices[i + 2];
+    }
+    centerX /= numVertices;
+    centerY /= numVertices;
+    centerZ /= numVertices;
+
+    // Criar matrizes de transformação
+    var translationToOrigin = createTranslationMatrix(-centerX, -centerY, -centerZ);
+    var scaleMatrix = createScaleMatrix(escX, escY, escZ);
+    var translationBack = createTranslationMatrix(centerX, centerY, centerZ);
+
+    // Combinar as matrizes de transformação na ordem correta
+    var transformationMatrix = multiplyMatrices(translationBack, multiplyMatrices(scaleMatrix, translationToOrigin));
+
+    // Aplicar a transformação aos vértices
+    return applyTransformation(vertices, transformationMatrix);
+}
+
+function calculateNormals(vertices) {
+    var normals = [];
+
+    // Assumindo que os vértices são fornecidos em grupos de 5 para formar faces
+    for (var i = 0; i < vertices.length; i += 25) {
+        // Pegar os cinco vértices da face
+        var v0 = [vertices[i], vertices[i + 1], vertices[i + 2]];
+        var v1 = [vertices[i + 5], vertices[i + 6], vertices[i + 7]];
+        var v2 = [vertices[i + 10], vertices[i + 11], vertices[i + 12]];
+        var v3 = [vertices[i + 15], vertices[i + 16], vertices[i + 17]];
+        var v4 = [vertices[i + 20], vertices[i + 21], vertices[i + 22]];
+
+        // Calcular os vetores das arestas da face
+        var edge1 = [v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2]];
+        var edge2 = [v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2]]; 
+        var edge3 = [v3[0] - v0[0], v3[1] - v0[1], v3[2] - v0[2]];
+        var edge4 = [v4[0] - v0[0], v4[1] - v0[1], v4[2] - v0[2]];
+
+        // Calcular a normal usando o produto vetorial
+        var normal = [
+            edge1[1] * edge2[2] - edge1[2] * edge2[1] + edge2[1] * edge3[2] - edge2[2] * edge3[1] + edge3[1] * edge4[2] - edge3[2] * edge4[1] + edge4[1] * edge1[2] - edge4[2] * edge1[1],
+            edge1[2] * edge2[0] - edge1[0] * edge2[2] + edge2[2] * edge3[0] - edge2[0] * edge3[2] + edge3[2] * edge4[0] - edge3[0] * edge4[2] + edge4[2] * edge1[0] - edge4[0] * edge1[2],
+            edge1[0] * edge2[1] - edge1[1] * edge2[0] + edge2[0] * edge3[1] - edge2[1] * edge3[0] + edge3[0] * edge4[1] - edge3[1] * edge4[0] + edge4[0] * edge1[1] - edge4[1] * edge1[0]
+        ];
+            
+        // Adicionar a normal para cada vértice da face
+        for (var j = 0; j < 5; j++) {
+            normals.push(normal[0], normal[1], normal[2]);
+        }
+    }
+
+    return new Float32Array(normals);
+}
+
+var lightX = -10;
+var sinal = 1.5;
+
+var lightX2 = 120;
+var sinal2 = -sinal;
+
+function createBuffer() {
+
+    // Configuração da luz
+
+    var luzAmbientePtr = gl.getUniformLocation(prog, "luzAmbiente");
+    gl.uniform3fv(luzAmbientePtr, [1, 1, 1]);
+
+    var direction = [lightX, 0, 25];
+    var lightDirectionPtr = gl.getUniformLocation(prog, "lightDirection");
+    gl.uniform3fv(lightDirectionPtr, direction);
+    
+    var lightColorPtr = gl.getUniformLocation(prog, "lightColor");
+    gl.uniform3fv(lightColorPtr, [0.8, 0.5, 0.0]);
+    
+    var lightp = [lightX, 15, direction[2]];
+    var lightposPtr = gl.getUniformLocation(prog, "lightpos");
+    gl.uniform3fv(lightposPtr, lightp);
+    campos = [lightp[0], lightp[1], lightp[2]];
+    var camposPtr = gl.getUniformLocation(prog, "campos");
+    gl.uniform3fv(camposPtr, campos);
+
+    lightX += sinal;
+
+    if (lightX > 120 || lightX < -10) {
+        sinal *= -1;
+
+    }
+
+
+    var direction = [lightX2, 0, 25];
+    var lightDirectionPtr = gl.getUniformLocation(prog, "lightDirection2");
+    gl.uniform3fv(lightDirectionPtr, direction);
+    
+    var lightColorPtr = gl.getUniformLocation(prog, "lightColor2");
+    gl.uniform3fv(lightColorPtr, [0.5, 0.0, 0.7]);
+    
+    var lightp = [lightX2, 15, direction[2]];
+    var lightposPtr = gl.getUniformLocation(prog, "lightpos2");
+    gl.uniform3fv(lightposPtr, lightp);
+    campos = [lightp[0], lightp[1], lightp[2]];
+    var camposPtr = gl.getUniformLocation(prog, "campos2");
+    gl.uniform3fv(camposPtr, campos);
+
+    lightX2 += sinal2;
+
+    if (lightX2 > 120 || lightX2 < -10) {
+        sinal2 *= -1;
+
+    }
+
+    // Configuração dos objetos
+    var repeticoes = 100;
+
+    var piso = new Float32Array([
+        1000, 0, 1000, repeticoes, repeticoes,
+        1000, 0, 0.0, repeticoes, 0.0,
+        -1000, 0, 0.0, 0.0, 0.0,
+        -1000, 0, 1000, 0.0, repeticoes,
+        1000, 0, 1000, repeticoes, repeticoes,
+    ]);
+
+    var cubo_meio = new Float32Array([
+        // Face de trás
+        65.0,  40.0, 0.0, 0.0, 1.0,
+        40.0,  40.0, 0.0, 1.0, 1.0,
+        40.0,  65.0, 0.0, 1.0, 0.0,
+        65.0,  65.0, 0.0, 0.0, 0.0,
+        65.0,  40.0, 0.0, 0.0, 1.0,
+
+        // Face da esquerda
+        40.0,  65.0, 0.0, 0.0, 0.0,
+        40.0,  40.0, 0.0, 0.0, 1.0,
+        40.0,  40.0, 25.0, 1.0, 1.0,
+        40.0,  65.0, 25.0, 1.0, 0.0,
+        40.0,  65.0, 0.0, 0.0, 0.0,
+
+        // Face de baixo
+        40.0,  40.0, 25.0, 0.0, 0.0,
+        40.0,  40.0, 0.0, 0.0, 1.0,
+        65.0,  40.0, 0.0, 1.0, 1.0,
+        65.0,  40.0, 25.0, 1.0, 0.0,
+        40.0,  40.0, 25.0, 0.0, 0.0,
+
+        // Face de cima
+        65.0,  65.0, 0.0, 1.0, 0.0,
+        40.0,  65.0, 0.0, 0.0, 0.0,
+        40.0,  65.0, 25.0, 0.0, 1.0,
+        65.0,  65.0, 25.0, 1.0, 1.0,
+        65.0,  65.0, 0.0, 1.0, 0.0,
+
+        // Face da frente
+        40.0,  65.0, 25.0, 0.0, 0.0,
+        40.0,  40.0, 25.0, 0.0, 1.0,
+        65.0,  40.0, 25.0, 1.0, 1.0,
+        65.0,  65.0, 25.0, 1.0, 0.0,
+        40.0,  65.0, 25.0, 0.0, 0.0,
+
+        // Face da direita
+        65.0,  40.0, 25.0, 0.0, 1.0,
+        65.0,  40.0, 0.0, 1.0, 1.0,
+        65.0,  65.0, 0.0, 1.0, 0.0,
+        65.0,  65.0, 25.0, 0.0, 0.0,
+        65.0,  40.0, 25.0, 0.0, 1.0,
+    ]);
+
+    var casa1 = new Float32Array([
+        // Paredes
         10,  0, 20, 1.0, 1.0,
         10, 10, 20, 1.0, 0.0,
         10, 10, 10, 0.0, 0.0,
@@ -204,8 +467,10 @@ function configScene() {
         15, 12, 10, 1.0, 1.0,
         20, 10, 10, 1.0, 0.0,
         10, 10, 10, 0.0, 0.0,
+    ]);
 
-        // Casa 2
+    var casa2 = new Float32Array([
+        // Paredes
         50,  0, 20, 1.0, 1.0,
         50, 10, 20, 1.0, 0.0,
         50, 10, 10, 0.0, 0.0,
@@ -254,8 +519,10 @@ function configScene() {
         55, 12, 10, 1.0, 1.0,
         60, 10, 10, 1.0, 0.0,
         50, 10, 10, 0.0, 0.0,
+    ]);
 
-        // Casa 3
+    var casa3 = new Float32Array([
+        // Paredes
         90,  0, 20, 1.0, 1.0,
         90, 10, 20, 1.0, 0.0,
         90, 10, 10, 0.0, 0.0,
@@ -304,13 +571,118 @@ function configScene() {
          95, 12, 10, 1.0, 1.0,
         100, 10, 10, 1.0, 0.0,
          90, 10, 10, 0.0, 0.0,
-
     ]);
+
+    var cubo1 = new Float32Array([
+        // Face de trás
+        65.0,  40.0, 0.0, 0.0, 1.0,
+        40.0,  40.0, 0.0, 1.0, 1.0,
+        40.0,  65.0, 0.0, 1.0, 0.0,
+        65.0,  65.0, 0.0, 0.0, 0.0,
+        65.0,  40.0, 0.0, 0.0, 1.0,
+
+        // Face da esquerda
+        40.0,  65.0, 0.0, 0.0, 0.0,
+        40.0,  40.0, 0.0, 0.0, 1.0,
+        40.0,  40.0, 25.0, 1.0, 1.0,
+        40.0,  65.0, 25.0, 1.0, 0.0,
+        40.0,  65.0, 0.0, 0.0, 0.0,
+
+        // Face de baixo
+        40.0,  40.0, 25.0, 0.0, 0.0,
+        40.0,  40.0, 0.0, 0.0, 1.0,
+        65.0,  40.0, 0.0, 1.0, 1.0,
+        65.0,  40.0, 25.0, 1.0, 0.0,
+        40.0,  40.0, 25.0, 0.0, 0.0,
+
+        // Face de cima
+        65.0,  65.0, 0.0, 1.0, 0.0,
+        40.0,  65.0, 0.0, 0.0, 0.0,
+        40.0,  65.0, 25.0, 0.0, 1.0,
+        65.0,  65.0, 25.0, 1.0, 1.0,
+        65.0,  65.0, 0.0, 1.0, 0.0,
+
+        // Face da frente
+        40.0,  65.0, 25.0, 0.0, 0.0,
+        40.0,  40.0, 25.0, 0.0, 1.0,
+        65.0,  40.0, 25.0, 1.0, 1.0,
+        65.0,  65.0, 25.0, 1.0, 0.0,
+        40.0,  65.0, 25.0, 0.0, 0.0,
+
+        // Face da direita
+        65.0,  40.0, 25.0, 0.0, 1.0,
+        65.0,  40.0, 0.0, 1.0, 1.0,
+        65.0,  65.0, 0.0, 1.0, 0.0,
+        65.0,  65.0, 25.0, 0.0, 0.0,
+        65.0,  40.0, 25.0, 0.0, 1.0,
+    ]);
+
+
+    var cubo2 = new Float32Array([
+        // Face de trás
+        65.0,  40.0, 0.0, 0.0, 1.0,
+        40.0,  40.0, 0.0, 1.0, 1.0,
+        40.0,  65.0, 0.0, 1.0, 0.0,
+        65.0,  65.0, 0.0, 0.0, 0.0,
+        65.0,  40.0, 0.0, 0.0, 1.0,
+
+        // Face da esquerda
+        40.0,  65.0, 0.0, 0.0, 0.0,
+        40.0,  40.0, 0.0, 0.0, 1.0,
+        40.0,  40.0, 25.0, 1.0, 1.0,
+        40.0,  65.0, 25.0, 1.0, 0.0,
+        40.0,  65.0, 0.0, 0.0, 0.0,
+
+        // Face de baixo
+        40.0,  40.0, 25.0, 0.0, 0.0,
+        40.0,  40.0, 0.0, 0.0, 1.0,
+        65.0,  40.0, 0.0, 1.0, 1.0,
+        65.0,  40.0, 25.0, 1.0, 0.0,
+        40.0,  40.0, 25.0, 0.0, 0.0,
+
+        // Face de cima
+        65.0,  65.0, 0.0, 1.0, 0.0,
+        40.0,  65.0, 0.0, 0.0, 0.0,
+        40.0,  65.0, 25.0, 0.0, 1.0,
+        65.0,  65.0, 25.0, 1.0, 1.0,
+        65.0,  65.0, 0.0, 1.0, 0.0,
+
+        // Face da frente
+        40.0,  65.0, 25.0, 0.0, 0.0,
+        40.0,  40.0, 25.0, 0.0, 1.0,
+        65.0,  40.0, 25.0, 1.0, 1.0,
+        65.0,  65.0, 25.0, 1.0, 0.0,
+        40.0,  65.0, 25.0, 0.0, 0.0,
+
+        // Face da direita
+        65.0,  40.0, 25.0, 0.0, 1.0,
+        65.0,  40.0, 0.0, 1.0, 1.0,
+        65.0,  65.0, 0.0, 1.0, 0.0,
+        65.0,  65.0, 25.0, 0.0, 0.0,
+        65.0,  40.0, 25.0, 0.0, 1.0,
+    ]);
+
+    var scala = 0.35;
+    cubo1 = scaleVertices(cubo1, scala, scala, scala);
+    cubo1 = translateVertices(cubo1, -38, -20, 0);
+    cubo1 = rotateVertices(cubo1, 0, angle, 0);
+
+    cubo_meio = scaleVertices(cubo_meio, scala, scala, scala);
+    cubo_meio = translateVertices(cubo_meio, 3, -20, 0);
+    cubo_meio = rotateVertices(cubo_meio, 0, angle, 0);
+
+    cubo2 = scaleVertices(cubo2, scala, scala, scala);
+    cubo2 = translateVertices(cubo2, 43, -20, 0);
+    cubo2 = rotateVertices(cubo2, 0, angle, 0);
+
+    angle += 2.5;
+
+    var coordenadas = new Float32Array([...piso, ...cubo_meio, ...casa1, ...casa2, ...casa3, ...cubo1, ...cubo2]);
 
     //Cria buffer na GPU e copia coordenadas para ele
     var bufPtr = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufPtr);
-    gl.bufferData(gl.ARRAY_BUFFER, coordTriangles, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, coordenadas, gl.STATIC_DRAW);
 
     //Pega ponteiro para o atributo "position" do vertex shader
     var positionPtr = gl.getAttribLocation(prog, "position");
@@ -341,199 +713,8 @@ function configScene() {
         3 * 4       //salto inicial (em bytes)
     );
 
-    //Iluminação =================================================================
-    var normals = new Float32Array([
-        // Piso
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0,
-
-        // Sol
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        // Casa 1
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        // Casa 2
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        // Casa 2
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-        1, 0, 0,
-    ]);
+    // Calcula as normais dos vértices
+    var normals = calculateNormals(coordenadas);
 
     //Cria buffer na GPU e copia coordenadas para ele
     var bufnormalPtr = gl.createBuffer();
@@ -555,21 +736,8 @@ function configScene() {
         0         //salto inicial (em bytes)
     );
 
-    var lightDirectionPtr = gl.getUniformLocation(prog, "lightDirection");
-    gl.uniform3fv(lightDirectionPtr, [0, 2, 10]);
-
-    var lightColorPtr = gl.getUniformLocation(prog, "lightColor");
-    gl.uniform3fv(lightColorPtr, [1, 1, 1]);
-
-    var campos = [0, 0.25, 5];
-    var lightp = [100.0, 1.0, 1.0];
-    var lightposPtr = gl.getUniformLocation(prog, "lightpos");
-    gl.uniform3fv(lightposPtr, lightp);
-
-    var camposPtr = gl.getUniformLocation(prog, "campos");
-    gl.uniform3fv(camposPtr, campos);
-    // ============================================================================        					  
-
+}
+function configScene() {				  
 
     //submeter textura para gpu
     var tex0 = gl.createTexture();
@@ -579,7 +747,7 @@ function configScene() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[0]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[1]);
 
     var tex1 = gl.createTexture();
     gl.activeTexture(gl.TEXTURE1);
@@ -590,14 +758,14 @@ function configScene() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[1]);
 
-    tex2 = gl.createTexture();
+    texGrama = gl.createTexture();
     gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, tex2);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindTexture(gl.TEXTURE_2D, texGrama);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[2]);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[9]);
     gl.generateMipmap(gl.TEXTURE_2D);
 
     var tex3 = gl.createTexture();
@@ -605,8 +773,8 @@ function configScene() {
     gl.bindTexture(gl.TEXTURE_2D, tex3);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, teximg[3]);
 
     var tex4 = gl.createTexture();
@@ -694,6 +862,11 @@ function updateViewMatrix() {
 
     transfprojPtr = gl.getUniformLocation(prog, "transfproj");
     gl.uniformMatrix4fv(transfprojPtr, false, transformaproj);
+
+    var transforma = math.identity(4);
+    transforma = math.flatten(math.transpose(transforma))._data;           
+    transfPtr = gl.getUniformLocation(prog, "transf");
+    gl.uniformMatrix4fv(transfPtr, false, transforma);
 }
 
 var mouseSensitivity = 0.2;
@@ -763,6 +936,12 @@ function checkCameraPosition(cameraPosition) {
     }
 }
 
+results = ["loss.html", "loss.html", "loss.html"];
+const randomValue = Math.floor(Math.random() * 3);
+results[randomValue] = "congrats.html";
+
+console.log(results);
+
 function handleKeyDown(event) {
     var forwardDirection = [
         Math.sin(cameraRotationY * Math.PI / 180.0),
@@ -800,19 +979,19 @@ function handleKeyDown(event) {
         cameraPosition[0] >= 10 && cameraPosition[0] <= 20 &&
         cameraPosition[2] >= 10 && cameraPosition[2] <= 20
     ) {
-        window.location.href = 'congrats.html';
+        window.location.href = results[0];
     }
     if (
         cameraPosition[0] >= 50 && cameraPosition[0] <= 60 &&
         cameraPosition[2] >= 10 && cameraPosition[2] <= 20
     ) {
-        window.location.href = 'loss.html';
+        window.location.href = results[1];
     }
     if (
         cameraPosition[0] >= 90 && cameraPosition[0] <= 100 &&
         cameraPosition[2] >= 10 && cameraPosition[2] <= 20
     ) {
-        window.location.href = 'loss.html';
+        window.location.href = results[2];
     }
 
     updateViewMatrix();
@@ -821,49 +1000,22 @@ function handleKeyDown(event) {
 window.addEventListener("keydown", handleKeyDown);
 window.addEventListener("mousemove", handleMouseMove);
 
-var angleX = 0;
-var angleY = 0;
-var angleZ = 0;
-
-var angle = 0;
 function draw() {
     updateViewMatrix();
 
-    angleX += 0.1;
-    angleY += 0.1;
-    angleZ += 0.1;
-
-    var matrotX = math.matrix([
-        [1.0, 0.0, 0.0, 0.0],
-        [0.0, Math.cos(angleX * Math.PI / 180.0), -Math.sin(angleX * Math.PI / 180.0), 0.0],
-        [0.0, Math.sin(angleX * Math.PI / 180.0), Math.cos(angleX * Math.PI / 180.0), 0.0],
-        [0.0, 0.0, 0.0, 1.0]
-    ]);
-
-    var matrotY = math.matrix([
-        [Math.cos(angleY * Math.PI / 180.0), 0.0, Math.sin(angleY * Math.PI / 180.0), 0.0],
-        [0.0, 1.0, 0.0, 0.0],
-        [-Math.sin(angleY * Math.PI / 180.0), 0.0, Math.cos(angleY * Math.PI / 180.0), 0.0],
-        [0.0, 0.0, 0.0, 1.0]
-    ]);
-
-    var matrotZ = math.matrix([
-        [Math.cos(angleZ * Math.PI / 180.0), -Math.sin(angleZ * Math.PI / 180.0), 0.0, 0.0],
-        [Math.sin(angleZ * Math.PI / 180.0), Math.cos(angleZ * Math.PI / 180.0), 0.0, 0.0],
-        [0.0, 0.0, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 1.0]
-    ]);   
+    createBuffer();   
 
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     //desenha triângulos - executa shaders
     var texPtr = gl.getUniformLocation(prog, "tex");
+    
     // Chão
     gl.uniform1i(texPtr, 2); 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.drawArrays(gl.TRIANGLES, 2, 3);
 
-    // Sol
+    // Cubo do meio
     gl.uniform1i(texPtr, 3);
     gl.drawArrays(gl.TRIANGLES, 5, 3);
     gl.drawArrays(gl.TRIANGLES, 7, 3);
@@ -956,7 +1108,7 @@ function draw() {
     gl.drawArrays(gl.TRIANGLES, 110, 3);
     gl.drawArrays(gl.TRIANGLES, 112, 3);
 
-    // Casa 2
+    // Casa 3
     gl.uniform1i(texPtr, 1);
     gl.drawArrays(gl.TRIANGLES, 115, 3);
     gl.drawArrays(gl.TRIANGLES, 117, 3);
@@ -966,7 +1118,7 @@ function draw() {
     gl.drawArrays(gl.TRIANGLES, 122, 3);
 
     gl.uniform1i(texPtr, 1);
-    gl.drawArrays(gl.TRIANGLES, 1125, 3);
+    gl.drawArrays(gl.TRIANGLES, 125, 3);
     gl.drawArrays(gl.TRIANGLES, 127, 3);
 
     gl.uniform1i(texPtr, 5);
@@ -990,8 +1142,44 @@ function draw() {
     gl.drawArrays(gl.TRIANGLES, 150, 3);
     gl.drawArrays(gl.TRIANGLES, 152, 3);
 
+    // Cubo 1
+    gl.uniform1i(texPtr, 3);
+    gl.drawArrays(gl.TRIANGLES, 155, 3);
+    gl.drawArrays(gl.TRIANGLES, 157, 3);
 
-    angle ++;
+    gl.drawArrays(gl.TRIANGLES, 160, 3);
+    gl.drawArrays(gl.TRIANGLES, 162, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 165, 3);
+    gl.drawArrays(gl.TRIANGLES, 167, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 170, 3);
+    gl.drawArrays(gl.TRIANGLES, 172, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 175, 3);
+    gl.drawArrays(gl.TRIANGLES, 177, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 180, 3);
+    gl.drawArrays(gl.TRIANGLES, 182, 3);
+
+    // Cubo 2
+    gl.drawArrays(gl.TRIANGLES, 185, 3);
+    gl.drawArrays(gl.TRIANGLES, 187, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 190, 3);
+    gl.drawArrays(gl.TRIANGLES, 192, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 195, 3);
+    gl.drawArrays(gl.TRIANGLES, 197, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 200, 3);
+    gl.drawArrays(gl.TRIANGLES, 202, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 205, 3);
+    gl.drawArrays(gl.TRIANGLES, 207, 3);
+
+    gl.drawArrays(gl.TRIANGLES, 210, 3);
+    gl.drawArrays(gl.TRIANGLES, 212, 3);
 
     requestAnimationFrame(draw);
 }
