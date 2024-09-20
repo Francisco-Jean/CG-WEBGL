@@ -59,8 +59,13 @@ function loadTextures() {
     if (loadTexs == texSrc.length) {
         initGL();
         configScene();
+        setTimeout(() => backToGame(), 5000);
         congrats();
     }
+}
+
+function backToGame() {
+    window.location.href = "webgl.html";
 }
 
 function initGL() {
